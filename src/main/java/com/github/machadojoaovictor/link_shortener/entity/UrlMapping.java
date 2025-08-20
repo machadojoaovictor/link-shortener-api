@@ -24,16 +24,7 @@ public class UrlMapping {
     @Column(nullable = false, length = 20, unique = true)
     private String shortCode;
 
-    private Long clicks = 0L;
-
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime expireAt;
-
-    public void addClick() {
-        this.clicks++;
-    }
 }

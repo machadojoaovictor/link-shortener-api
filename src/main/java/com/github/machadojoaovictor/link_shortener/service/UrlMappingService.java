@@ -6,7 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import static com.github.machadojoaovictor.link_shortener.utils.CodeGenerator.generateBase62;
+import static com.github.machadojoaovictor.link_shortener.utils.CodeGenerator.toBase62;
 
 @RequiredArgsConstructor
 @Service
@@ -14,17 +18,20 @@ public class UrlMappingService {
 
     private final UrlMappingRepository repository;
 
-    private static long counter = 1L;
-    private static final String ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static final AtomicLong counter = new AtomicLong(1);
 
     @Transactional
-    public UrlMapping shortenUrl(String originalUrl, LocalDateTime expireAt) {
-        String shortCode = toBase62(counter++);
+    public UrlMapping shortenUrl(String originalUrl) {
+        String basePart = toBase62(counter.incrementAndGet());
+        String randomPart = generateBase62(4);
+        String shortCode = basePart + randomPart;
 
-        UrlMapping urlMapping = UrlMapping.builder().originalUrl(originalUrl).shortCode(shortCode).expireAt(expireAt).build();
+        UrlMapping urlMapping = UrlMapping.builder()
+                .originalUrl(originalUrl)
+                .shortCode(shortCode)
+                .build();
 
         repository.save(urlMapping);
-
         return urlMapping;
     }
 
@@ -34,25 +41,4 @@ public class UrlMappingService {
                 () -> new RuntimeException("Err")
         );
     }
-
-    @Transactional
-    public void incrementClicks(UrlMapping urlMapping) {
-        urlMapping.addClick();
-        repository.save(urlMapping);
-    }
-
-
-    private String toBase62(long num) {
-        if (num == 0) return "0";
-
-        StringBuilder sb = new StringBuilder();
-
-        while (num > 0) {
-            sb.append(ALPHABET.charAt((int) (num % 62)));
-            num /= 62;
-        }
-
-        return sb.reverse().toString();
-    }
-
 }
