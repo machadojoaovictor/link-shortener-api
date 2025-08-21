@@ -1,6 +1,8 @@
 package com.github.machadojoaovictor.link_shortener.service;
 
+import com.github.machadojoaovictor.link_shortener.dto.response.UrlMappingResponseDTO;
 import com.github.machadojoaovictor.link_shortener.entity.UrlMapping;
+import com.github.machadojoaovictor.link_shortener.mapper.UrlMappingMapper;
 import com.github.machadojoaovictor.link_shortener.repository.UrlMappingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,28 +19,22 @@ import static com.github.machadojoaovictor.link_shortener.utils.CodeGenerator.to
 public class UrlMappingService {
 
     private final UrlMappingRepository repository;
+    private final UrlMappingMapper mapper;
 
     private static final AtomicLong counter = new AtomicLong(1);
 
     @Transactional
-    public UrlMapping shortenUrl(String originalUrl) {
+    public UrlMappingResponseDTO shortenUrl(String originalUrl) {
         String basePart = toBase62(counter.incrementAndGet());
         String randomPart = generateBase62(4);
         String shortCode = basePart + randomPart;
 
-        UrlMapping urlMapping = UrlMapping.builder()
+        UrlMapping entity = UrlMapping.builder()
                 .originalUrl(originalUrl)
                 .shortCode(shortCode)
                 .build();
 
-        repository.save(urlMapping);
-        return urlMapping;
-    }
-
-    @Transactional(readOnly = true)
-    public UrlMapping getUrl(String shortCode) {
-        return repository.findByShortCode(shortCode).orElseThrow(
-                () -> new RuntimeException("Err")
-        );
+        repository.save(entity);
+        return mapper.toDTO(entity);
     }
 }
