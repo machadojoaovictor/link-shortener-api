@@ -1,5 +1,6 @@
 package com.github.machadojoaovictor.link_shortener.service;
 
+import com.github.machadojoaovictor.link_shortener.dto.request.UrlMappingRequestDTO;
 import com.github.machadojoaovictor.link_shortener.dto.response.UrlMappingResponseDTO;
 import com.github.machadojoaovictor.link_shortener.entity.UrlMapping;
 import com.github.machadojoaovictor.link_shortener.entity.enums.UrlMappingStatus;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
@@ -21,25 +24,23 @@ import static com.github.machadojoaovictor.link_shortener.utils.CodeGenerator.to
 public class UrlMappingService {
 
     private final UrlMappingRepository repository;
-    private final UrlMappingMapper mapper;
 
     private static final AtomicLong counter = new AtomicLong(1);
 
     @Transactional
-    public UrlMappingResponseDTO shortenUrl(String originalUrl, LocalDateTime expiresAt, Integer maxClicks) {
+    public UrlMappingResponseDTO shortenUrl(UrlMappingRequestDTO requestDTO) throws URISyntaxException {
         String basePart = toBase62(counter.incrementAndGet());
         String randomPart = generateBase62(4);
         String shortCode = basePart + randomPart;
 
-        UrlMapping entity = UrlMapping.builder()
-                .originalUrl(originalUrl)
-                .shortCode(shortCode)
-                .expiresAt(expiresAt)
-                .maxClicks(maxClicks)
-                .build();
+        UrlMapping entity = UrlMappingMapper.toEntity(requestDTO, shortCode);
+        entity = repository.saveAndFlush(entity);
 
-        repository.save(entity);
-        return mapper.toDTO(entity);
+        URI uri = new URI(entity.getOriginalUrl());
+        String baseUrl = uri.getScheme() + "://" + uri.getHost();
+        String newUrl = baseUrl + "/" + shortCode;
+
+        return UrlMappingMapper.toResponseDTO(entity, newUrl);
     }
 
     @Transactional

@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.net.URISyntaxException;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,12 +21,8 @@ public class UrlMappingController {
     private final UrlMappingService service;
 
     @PostMapping
-    public ResponseEntity<UrlMappingResponseDTO> shortenUrl(@Valid @RequestBody UrlMappingRequestDTO requestDTO) {
-        String originalUrl = requestDTO.originalUrl();
-        LocalDateTime expiresAt = requestDTO.expiresAt();
-        Integer maxClicks = requestDTO.maxClicks();
-
-        UrlMappingResponseDTO responseDTO = service.shortenUrl(originalUrl, expiresAt, maxClicks);
+    public ResponseEntity<UrlMappingResponseDTO> shortenUrl(@Valid @RequestBody UrlMappingRequestDTO requestDTO) throws URISyntaxException {
+        UrlMappingResponseDTO responseDTO = service.shortenUrl(requestDTO);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 

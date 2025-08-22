@@ -1,25 +1,30 @@
 package com.github.machadojoaovictor.link_shortener.mapper;
 
+import com.github.machadojoaovictor.link_shortener.dto.request.UrlMappingRequestDTO;
 import com.github.machadojoaovictor.link_shortener.dto.response.UrlMappingResponseDTO;
 import com.github.machadojoaovictor.link_shortener.entity.UrlMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
 
-import java.net.URI;
+public class UrlMappingMapper {
 
-@Mapper(componentModel = "spring")
-public interface UrlMappingMapper {
+    public static UrlMapping toEntity(UrlMappingRequestDTO requestDTO, String shortCode) {
+        return UrlMapping.builder()
+                .originalUrl(requestDTO.originalUrl())
+                .shortCode(shortCode)
+                .expiresAt(requestDTO.expiresAt())
+                .maxClicks(requestDTO.maxClicks())
+                .build();
+    }
 
-    @Mapping(target = "newUrl", expression = "java(buildNewUrl(entity))")
-    UrlMappingResponseDTO toDTO(UrlMapping entity);
-
-    default String buildNewUrl(UrlMapping entity) {
-        try {
-            URI uri = new URI(entity.getOriginalUrl());
-            String baseUrl = uri.getScheme() + "://" + uri.getHost();
-            return baseUrl + "/" + entity.getShortCode();
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid URL: " + entity.getOriginalUrl(), e);
-        }
+    public static UrlMappingResponseDTO toResponseDTO(UrlMapping entity, String newUrl) {
+        return UrlMappingResponseDTO.builder()
+                .originalUrl(entity.getOriginalUrl())
+                .newUrl(newUrl)
+                .shortCode(entity.getShortCode())
+                .createdAt(entity.getCreatedAt())
+                .expiresAt(entity.getExpiresAt())
+                .maxClicks(entity.getMaxClicks())
+                .currentClicks(entity.getClicks())
+                .status(String.valueOf(entity.getStatus()))
+                .build();
     }
 }
