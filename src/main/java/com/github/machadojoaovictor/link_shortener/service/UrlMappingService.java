@@ -1,5 +1,6 @@
 package com.github.machadojoaovictor.link_shortener.service;
 
+import com.github.machadojoaovictor.link_shortener.config.AppProperties;
 import com.github.machadojoaovictor.link_shortener.dto.request.UrlMappingRequestDTO;
 import com.github.machadojoaovictor.link_shortener.dto.response.UrlMappingResponseDTO;
 import com.github.machadojoaovictor.link_shortener.entity.UrlMapping;
@@ -24,6 +25,7 @@ import static com.github.machadojoaovictor.link_shortener.utils.CodeGenerator.to
 public class UrlMappingService {
 
     private final UrlMappingRepository repository;
+    private final AppProperties properties;
 
     private static final AtomicLong counter = new AtomicLong(1);
 
@@ -36,11 +38,13 @@ public class UrlMappingService {
         UrlMapping entity = UrlMappingMapper.toEntity(requestDTO, shortCode);
         entity = repository.saveAndFlush(entity);
 
-        URI uri = new URI(entity.getOriginalUrl());
-        String baseUrl = uri.getScheme() + "://" + uri.getHost();
-        String newUrl = baseUrl + "/" + shortCode;
+        String shortUrl = buildShortUrl(shortCode);
 
-        return UrlMappingMapper.toResponseDTO(entity, newUrl);
+        return UrlMappingMapper.toResponseDTO(entity, shortUrl);
+    }
+
+    private String buildShortUrl(String shortCode) {
+        return properties.baseUrl() + "/" + shortCode;
     }
 
     @Transactional

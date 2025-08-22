@@ -7,12 +7,11 @@ import java.time.LocalDateTime;
 @Builder
 public record UrlMappingResponseDTO(
         String originalUrl,
-        String newUrl,
+        String shortUrl,
         String shortCode,
         LocalDateTime createdAt,
         LocalDateTime expiresAt,
         Long maxClicks,
-        Long currentClicks,
         String status
 ) {
 }

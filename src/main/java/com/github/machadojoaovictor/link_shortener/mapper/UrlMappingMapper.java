@@ -15,15 +15,14 @@ public class UrlMappingMapper {
                 .build();
     }
 
-    public static UrlMappingResponseDTO toResponseDTO(UrlMapping entity, String newUrl) {
+    public static UrlMappingResponseDTO toResponseDTO(UrlMapping entity, String shortUrl) {
         return UrlMappingResponseDTO.builder()
                 .originalUrl(entity.getOriginalUrl())
-                .newUrl(newUrl)
+                .shortUrl(shortUrl)
                 .shortCode(entity.getShortCode())
                 .createdAt(entity.getCreatedAt())
                 .expiresAt(entity.getExpiresAt())
                 .maxClicks(entity.getMaxClicks())
-                .currentClicks(entity.getClicks())
                 .status(String.valueOf(entity.getStatus()))
                 .build();
     }
