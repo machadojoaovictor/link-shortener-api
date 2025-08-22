@@ -32,11 +32,11 @@ public class UrlMapping {
 
     private LocalDateTime expiresAt;
 
-    private Integer maxClicks;
+    private Long maxClicks;
 
     @Builder.Default
     @Column(nullable = false)
-    private Integer clicks = 0;
+    private Long clicks = 0L;
 
     @Builder.Default
     @Enumerated(EnumType.STRING)
