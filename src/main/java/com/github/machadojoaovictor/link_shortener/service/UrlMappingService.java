@@ -25,26 +25,17 @@ import static com.github.machadojoaovictor.link_shortener.utils.CodeGenerator.to
 public class UrlMappingService {
 
     private final UrlMappingRepository repository;
-    private final AppProperties properties;
 
     private static final AtomicLong counter = new AtomicLong(1);
 
     @Transactional
-    public UrlMappingResponseDTO shortenUrl(UrlMappingRequestDTO requestDTO) throws URISyntaxException {
+    public UrlMapping shortenUrl(UrlMappingRequestDTO requestDTO) throws URISyntaxException {
         String basePart = toBase62(counter.incrementAndGet());
         String randomPart = generateBase62(4);
         String shortCode = basePart + randomPart;
 
         UrlMapping entity = UrlMappingMapper.toEntity(requestDTO, shortCode);
-        entity = repository.saveAndFlush(entity);
-
-        String shortUrl = buildShortUrl(shortCode);
-
-        return UrlMappingMapper.toResponseDTO(entity, shortUrl);
-    }
-
-    private String buildShortUrl(String shortCode) {
-        return properties.baseUrl() + "/" + shortCode;
+        return repository.saveAndFlush(entity);
     }
 
     @Transactional
