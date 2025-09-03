@@ -49,20 +49,9 @@ public class UrlMappingController {
     }
 
     @GetMapping("/{shortCode}")
-    public ResponseEntity<?> redirect(@PathVariable String shortCode) {
-        return service.getUrl(shortCode)
-                .map(this::createRedirectResponse)
-                .orElse(
-                        ResponseEntity.status(HttpStatus.NOT_FOUND).build()
-                );
-    }
-
-    private ResponseEntity<Void> createRedirectResponse(UrlMapping urlMapping) {
-        URI uri = URI.create(urlMapping.getOriginalUrl());
-
-        return ResponseEntity
-                .status(HttpStatus.TEMPORARY_REDIRECT)
-                .location(uri)
-                .build();
+    public ResponseEntity<Void> redirectToOriginalUrl(@PathVariable String shortCode) {
+        String originalUrl = service.processRedirectAndGetOriginalUrl(shortCode);
+        URI location = URI.create(originalUrl);
+        return ResponseEntity.status(HttpStatus.TEMPORARY_REDIRECT).location(location).build();
     }
 }
